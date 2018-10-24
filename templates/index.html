@@ -1,0 +1,15 @@
+{% extends "layout.html" %}
+{% import "macros.html" as macros %}
+
+{% block content %}
+  {%- if payloads is iterable -%}
+    {%- for j in payloads -%}
+      {{ macros.make_component(j) }}
+    {%- endfor -%}
+  {%- endif -%}
+  {%- if charts -%}
+    {%- for k in charts -%}
+      {{ macros.make_altair(id=k['id'], chart_as_json=k['chart_as_json']) }}
+    {%- endfor -%}
+  {%- endif -%}
+{% endblock content %}

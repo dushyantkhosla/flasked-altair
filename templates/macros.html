@@ -1,0 +1,49 @@
+# ----- Make an Altair chart from the JSON specification and an ID ----- #
+# ----- The ID should be the same as the a element ----- #
+# ------------------------------------------------------- #
+
+{% macro make_altair(id, chart_as_json) -%}
+  <script type="text/javascript">
+    var spec = {{ chart_as_json | tojson | safe }};
+    var embed_opt = {"mode": "vega-lite"};
+
+    function showError(el, error){
+        el.innerHTML = ('<div class="error">'
+                        + '<p>JavaScript Error: ' + error.message + '</p>'
+                        + "<p>This usually means there's a typo in your chart specification. "
+                        + "See the javascript console for the full traceback.</p>"
+                        + '</div>');
+        throw error;
+    }
+    vegaEmbed("#{{ id }}", spec, embed_opt)
+      .catch(error => showError(document.getElementById('{{ id }}'), error));
+  </script>
+{%- endmacro %}
+
+
+# ----- Generate HTML Component using given payload ----- #
+# ------------------------------------------------------- #
+
+{% macro make_component(payload) %}
+    <{{ payload['tag'] }}
+       {%- if payload['attributes'] -%}
+          {%- for k in payload['attributes'].keys() -%}
+              {%- if not k.last -%}
+                  {{' '}}
+              {%- endif -%}
+              {{ k }}='{{ payload['attributes'].get(k) }}'
+          {%- endfor -%}
+      {%- endif -%}>
+      {%- if payload['content'] -%}
+        {%- if payload['content'] is string -%}
+          {{ payload['content'] }}
+        {%- elif payload['content'] is sequence -%}
+          {%- for i in payload['content'] -%}
+            {{ make_component(payload=i) }}
+          {%- endfor -%}
+        {%- else -%}
+          {{ 'Unknown' }}
+        {%- endif -%}
+      {%- endif -%}
+    </{{ payload['tag'] }}>
+{% endmacro %}
